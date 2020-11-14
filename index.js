@@ -18,72 +18,97 @@ document.addEventListener('DOMContentLoaded', () => {
     ctx.putImageData(canvData, 0, 0);
   }
 
-  function drawPoint(x, y, d = 4, c = [0, 0, 0, 255]) {
-    switch (c) {
-      case 0: c = [0, 0, 0, 255]; break;
-      case 1: c = [255, 0, 0, 255]; break;
-      case 2: c = [0, 255, 0, 255]; break;
-      case 3: c = [0, 0, 255, 255]; break;
+  function drawPoint({ x, y, type = 0, d = 4, c = [0, 0, 0, 255] }) {
+    switch (type) {
+      case 1: c = [0, 255, 0, 255]; d = 6; break;
+      case 2: c = [255, 0, 0, 255]; d = 6; break;
+      case 3: c = [0, 0, 255, 255]; d = 4; break;
     }
     ctx.fillStyle = `rgba(${c[0]},${c[1]},${c[2]},${c[3]})`;
     ctx.beginPath();
     ctx.arc(x, y, d / 2, 0, 2 * Math.PI);
     ctx.fill();
   }
-  function drawLine(x0, y0, x1,y1, c = [0, 0, 0, 255]) {
-    switch (c) {
-      case 0: c = [0, 0, 0, 255]; break;
-      case 1: c = [255, 0, 0, 255]; break;
-      case 2: c = [0, 255, 0, 255]; break;
+  function drawLine({ x0, y0, x1, y1, type = 0, c = [0, 0, 0, 255] }) {
+    switch (type) {
+      case 1: c = [0, 255, 0, 255]; break;
+      case 2: c = [255, 0, 0, 255]; break;
       case 3: c = [0, 0, 255, 255]; break;
     }
     ctx.fillStyle = `rgba(${c[0]},${c[1]},${c[2]},${c[3]})`;
     ctx.beginPath();
-    ctx.moveTo(x0,y0);
-    ctx.lineTo(x1,y1);
+    ctx.moveTo(x0, y0);
+    ctx.lineTo(x1, y1);
     ctx.closePath();
     ctx.stroke();
   }
-  function drawText(k, x, y, c) {
-    switch (c) {
-      case 0: c = [0, 0, 0, 255]; break;
-      case 1: c = [255, 0, 0, 255]; break;
-      case 2: c = [0, 255, 0, 255]; break;
+  function drawText({ id, x, y, type = 0, c = [0, 0, 0, 255] }) {
+    switch (type) {
+      case 1: c = [0, 255, 0, 255]; break;
+      case 2: c = [255, 0, 0, 255]; break;
       case 3: c = [0, 0, 255, 255]; break;
     }
     ctx.fillStyle = `rgba(${c[0]},${c[1]},${c[2]},${c[3]})`;
     ctx.font = "12px serif";
-    ctx.fillText(k, x + 5, y);
+    ctx.fillText(id, x + 5, y);
   }
-
-  function getDistance(x0, y0, x1, y1) {
-    return Math.sqrt((x0 - x1) ** 2 + (y0 - y1) ** 2);
+  function generatePoints(n, width, height) {
+    const points = [];
+    for (let i = 0; i < n; i += 1) {
+      points[i] = { id: i, x: (Math.random() * 0.9 + 0.05) * width, y: (Math.random() * 0.9 + 0.05) * height, type: 0 };
+    }
+    return points;
+  }
+  function getDistance(a, b) {
+    return Math.sqrt((a.x - b.x) ** 2 + (a.y - b.y) ** 2);
   }
   function sortPoints(a, b) {
     return a[2] - b[2];
   }
-  function findMinDist(a, beginpos) {
-    let i = beginpos;
+  function calcSortDists(points) {
+    const dists = [];
+    for (let i = 0; i < points.length - 1; i += 1) {
+      for (let j = i + 1; j < points.length; j += 1) {
+        dists.push([points[i], points[j], getDistance(points[i], points[j])]);
+      }
+    }
+    dists.sort(sortPoints);
+    return dists;
+  }
+  function choiceStartPoint(points) {
+    let start = 0;
+    while (points[start = Math.floor(Math.random() * points.length)].type == 2);
+    points[start].type = 1;
+    return points[start];
+  }
+  function choiceEndPoint(points) {
+    let end = 0;
+    while (points[end = Math.floor(Math.random() * points.length)].type == 1);
+    points[end].type = 2;
+    return points[end];
+  }
+  function findMinDist(dists, a, start) {
+    let i = start;
     while (i >= 0 && i < dists.length) {
       if (dists[i][0] == a || dists[i][1] == a) return i;
       i += 1;
     }
     if (i < 0 || i >= dists.length) return -1;
   }
-  function compareDensity(a, b) {
-    if (a == b) return -1;
-    if ((a == startPoint && b == endPoint) || (a == endPoint && b == startPoint)) return -1;
-    if ((a == startPoint || a == endPoint)) return b;
-    if ((b == startPoint || b == endPoint)) return a;
+  function compareDensity(dists, a, b) {
+    if (a.id == b.id) return -1;
+    if ((a.type == 1 && b.type == 2) || (a.type == 2 && b.type == 1)) return -1;
+    if ((a.type == 1 || a.type == 2)) return b;
+    if ((b.type == 1 || b.type == 2)) return a;
     let diff = 0;
     let pos_a = 0;
     let pos_b = 0;
     do {
-      pos_a = findMinDist(a, pos_a);
-      pos_b = findMinDist(b, pos_b);
+      pos_a = findMinDist(dists, a, pos_a);
+      pos_b = findMinDist(dists, b, pos_b);
       if (pos_a == pos_b) {
-        pos_a = findMinDist(a, pos_a + 1);
-        pos_b = findMinDist(b, pos_b + 1);
+        pos_a = findMinDist(dists, a, pos_a + 1);
+        pos_b = findMinDist(dists, b, pos_b + 1);
       }
       if (pos_a == -1) return a;
       if (pos_b == -1) return b;
@@ -92,65 +117,65 @@ document.addEventListener('DOMContentLoaded', () => {
       if (diff > 0) return b;
     } while (diff == 0);
   }
-  function deletePoint(a) {
+  function deletePoint(points, dists, a) {
     for (let i = 0; i < dists.length; i += 1) {
       if (dists[i][0] == a || dists[i][1] == a) {
         dists.splice(i, 1);
         i -= 1;
       }
     }
-    delete points[a];
+    let index;
+    while (index != -1) {
+      index = points.indexOf(a);
+      index != -1 && points.splice(index, 1);
+    }
   }
-  function thinoutPoints(m) {
+  function thinoutPoints(points, dists, m) {
     let cur_index = 0;
-    do {
+    while (points.length > m) {
       let delPoint = -1;
       do {
-        delPoint = compareDensity(dists[cur_index][0], dists[cur_index][1]);
+        delPoint = compareDensity(dists, dists[cur_index][0], dists[cur_index][1]);
         if (delPoint == -1) cur_index += 1;
       } while (delPoint == -1);
-      deletePoint(delPoint);
-    } while (Object.keys(points).length > m)
+      deletePoint(points, dists, delPoint);
+    }
   }
-  function setControlPoint(k) {
-    if (origin_points[k].c == 0)
-      origin_points[k].c = 3;
+  function setControlPoint(point) {
+    if (point.type == 0) point.type = 3;
   }
-  function setControlPoints() {
-    Object.keys(points).forEach((k) => setControlPoint(k));
+  function setControlPoints(points) {
+    points.forEach(setControlPoint);
   }
-  function buildRoute() {
+  function buildRoute(dists, startPoint, endPoint) {
+    let route = [];
     route.push(startPoint);
 
     let curPoint = startPoint;
     let nextPoint = startPoint;
     let pos = 0;
     do {
-      pos = findMinDist(curPoint, pos);
-
+      pos = findMinDist(dists, curPoint, pos);
       if (pos == -1) {
         route.push(endPoint);
         break;
       }
-
       nextPoint = dists[pos][0] == curPoint ? dists[pos][1] : dists[pos][0];
-
       if (nextPoint == endPoint) { pos += 1; continue; }
       if (route.indexOf(nextPoint) != -1) { pos += 1; continue; }
-
       curPoint = nextPoint;
       route.push(nextPoint);
       pos = 0;
     } while (true);
+    return route;
   }
-  function displayPoints() {
-    Object.values(origin_points).forEach(({ x, y, d, c }) => drawPoint(x, y, d, c));
-    // Object.entries(origin_points).forEach(([k, { x, y, d, c }]) => drawText(k, x, y, c));
+  function displayPoints(points) {
+    points.forEach(drawPoint);
+    // points.forEach(drawText);
   }
-  function displayRoute() {
-    for ( let i = 0; i < route.length-1; i+=1) {
-      drawLine(points[route[i]].x,points[route[i]].y,points[route[i+1]].x,points[route[i+1]].y,0);
-    }
+  function displayRoute(route) {
+    for (let i = 0; i < route.length - 1; i += 1)
+      drawLine({ x0: route[i].x, y0: route[i].y, x1: route[i + 1].x, y1: route[i + 1].y, type: 0 });
   }
   function displayDump() {
     console.log(origin_points);
@@ -162,39 +187,23 @@ document.addEventListener('DOMContentLoaded', () => {
 
   const n = 100;
 
-  const origin_points = {};
-  for (let i = 0; i < n; i += 1) {
-    origin_points[i] = { x: (Math.random() * 0.9 + 0.05) * canvWidth, y: (Math.random() * 0.9 + 0.05) * canvHeight, d: 4, c: 0 };
-  }
+  const origin_points = generatePoints(n, canvWidth, canvHeight);
+  const origin_dists = calcSortDists(origin_points);
 
-  const origin_dists = [];
-  for (let i = 0; i < n - 1; i += 1) {
-    for (let j = i + 1; j < n; j += 1) {
-      origin_dists.push([i, j, getDistance(
-        origin_points[i].x, origin_points[i].y,
-        origin_points[j].x, origin_points[j].y
-      )]);
-    }
-  }
+  const startPoint = choiceStartPoint(origin_points);
+  const endPoint = choiceEndPoint(origin_points);
 
-  origin_dists.sort(sortPoints);
+  let points = [...origin_points];
+  let dists = [...origin_dists];
 
-  let startPoint = 0;
-  let endPoint = 0;
-  startPoint = Math.floor(Math.random() * n);
-  while ((endPoint = Math.floor(Math.random() * n)) == startPoint);
-  origin_points[startPoint].c = 1; origin_points[startPoint].d = 6;
-  origin_points[endPoint].c = 2; origin_points[endPoint].d = 6;
+  console.log(typeof origin_points);
 
-  let dists = JSON.parse(JSON.stringify(origin_dists));
-  let points = JSON.parse(JSON.stringify(origin_points));
-  thinoutPoints(10);
-  setControlPoints();
-  let route = [];
-  buildRoute();
+  thinoutPoints(points, dists, 10);
+  setControlPoints(points);
+  let route = buildRoute(dists, startPoint, endPoint);
 
-  displayPoints();
-  displayRoute();
+  displayPoints(origin_points);
+  displayRoute(route);
 
   displayDump();
 });
