@@ -20,9 +20,18 @@ document.addEventListener('DOMContentLoaded', () => {
 
   function drawPoint({ x, y, type = 0, d = 4, c = [0, 0, 0, 255] }) {
     switch (type) {
-      case 1: c = [0, 255, 0, 255]; d = 6; break;
-      case 2: c = [255, 0, 0, 255]; d = 6; break;
-      case 3: c = [0, 0, 255, 255]; d = 4; break;
+      case 1:
+        c = [0, 255, 0, 255];
+        d = 6;
+        break;
+      case 2:
+        c = [255, 0, 0, 255];
+        d = 6;
+        break;
+      case 3:
+        c = [0, 0, 255, 255];
+        d = 4;
+        break;
     }
     ctx.fillStyle = `rgba(${c[0]},${c[1]},${c[2]},${c[3]})`;
     ctx.beginPath();
@@ -31,9 +40,15 @@ document.addEventListener('DOMContentLoaded', () => {
   }
   function drawLine({ x0, y0, x1, y1, type = 0, c = [0, 0, 0, 255] }) {
     switch (type) {
-      case 1: c = [0, 255, 0, 255]; break;
-      case 2: c = [255, 0, 0, 255]; break;
-      case 3: c = [0, 0, 255, 255]; break;
+      case 1:
+        c = [0, 255, 0, 255];
+        break;
+      case 2:
+        c = [255, 0, 0, 255];
+        break;
+      case 3:
+        c = [0, 0, 255, 255];
+        break;
     }
     ctx.fillStyle = `rgba(${c[0]},${c[1]},${c[2]},${c[3]})`;
     ctx.beginPath();
@@ -44,18 +59,29 @@ document.addEventListener('DOMContentLoaded', () => {
   }
   function drawText({ id, x, y, type = 0, c = [0, 0, 0, 255] }) {
     switch (type) {
-      case 1: c = [0, 255, 0, 255]; break;
-      case 2: c = [255, 0, 0, 255]; break;
-      case 3: c = [0, 0, 255, 255]; break;
+      case 1:
+        c = [0, 255, 0, 255];
+        break;
+      case 2:
+        c = [255, 0, 0, 255];
+        break;
+      case 3:
+        c = [0, 0, 255, 255];
+        break;
     }
     ctx.fillStyle = `rgba(${c[0]},${c[1]},${c[2]},${c[3]})`;
-    ctx.font = "12px serif";
+    ctx.font = '12px serif';
     ctx.fillText(id, x + 5, y);
   }
   function generatePoints(n, width, height) {
     const points = [];
     for (let i = 0; i < n; i += 1) {
-      points[i] = { id: i, x: (Math.random() * 0.9 + 0.05) * width, y: (Math.random() * 0.9 + 0.05) * height, type: 0 };
+      points[i] = {
+        id: i,
+        x: (Math.random() * 0.9 + 0.05) * width,
+        y: (Math.random() * 0.9 + 0.05) * height,
+        type: 0,
+      };
     }
     return points;
   }
@@ -77,13 +103,13 @@ document.addEventListener('DOMContentLoaded', () => {
   }
   function choiceStartPoint(points) {
     let start = 0;
-    while (points[start = Math.floor(Math.random() * points.length)].type == 2);
+    while (points[(start = Math.floor(Math.random() * points.length))].type == 2);
     points[start].type = 1;
     return points[start];
   }
   function choiceEndPoint(points) {
     let end = 0;
-    while (points[end = Math.floor(Math.random() * points.length)].type == 1);
+    while (points[(end = Math.floor(Math.random() * points.length))].type == 1);
     points[end].type = 2;
     return points[end];
   }
@@ -98,8 +124,8 @@ document.addEventListener('DOMContentLoaded', () => {
   function compareDensity(dists, a, b) {
     if (a.id == b.id) return -1;
     if ((a.type == 1 && b.type == 2) || (a.type == 2 && b.type == 1)) return -1;
-    if ((a.type == 1 || a.type == 2)) return b;
-    if ((b.type == 1 || b.type == 2)) return a;
+    if (a.type == 1 || a.type == 2) return b;
+    if (b.type == 1 || b.type == 2) return a;
     let diff = 0;
     let pos_a = 0;
     let pos_b = 0;
@@ -161,8 +187,14 @@ document.addEventListener('DOMContentLoaded', () => {
         break;
       }
       nextPoint = dists[pos][0] == curPoint ? dists[pos][1] : dists[pos][0];
-      if (nextPoint == endPoint) { pos += 1; continue; }
-      if (route.indexOf(nextPoint) != -1) { pos += 1; continue; }
+      if (nextPoint == endPoint) {
+        pos += 1;
+        continue;
+      }
+      if (route.indexOf(nextPoint) != -1) {
+        pos += 1;
+        continue;
+      }
       curPoint = nextPoint;
       route.push(nextPoint);
       pos = 0;
@@ -175,7 +207,13 @@ document.addEventListener('DOMContentLoaded', () => {
   }
   function displayRoute(route) {
     for (let i = 0; i < route.length - 1; i += 1)
-      drawLine({ x0: route[i].x, y0: route[i].y, x1: route[i + 1].x, y1: route[i + 1].y, type: 0 });
+      drawLine({
+        x0: route[i].x,
+        y0: route[i].y,
+        x1: route[i + 1].x,
+        y1: route[i + 1].y,
+        type: 0,
+      });
   }
   function displayDump() {
     console.log(origin_points);
