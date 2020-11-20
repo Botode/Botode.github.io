@@ -1,4 +1,4 @@
-export default {
+module.exports = {
   env: {
     browser: true,
     es2021: true,
@@ -8,6 +8,7 @@ export default {
     ecmaVersion: 12,
     sourceType: 'module',
   },
+  plugins: ['prettier'],
   rules: {
     indent: ['error', 2],
     'linebreak-style': ['error', 'unix'],
