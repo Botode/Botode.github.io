@@ -5,18 +5,18 @@ document.addEventListener('DOMContentLoaded', () => {
   const canvWidth = canv.width;
   const canvHeight = canv.height;
   const ctx = canv.getContext('2d');
-  const canvData = ctx.getImageData(0, 0, canvWidth, canvHeight);
-  function drawPixel(x, y, r = 0, g = 0, b = 0, a = 255) {
-    const index = (x + y * canvWidth) * 4;
+  // const canvData = ctx.getImageData(0, 0, canvWidth, canvHeight);
+  // function drawPixel(x, y, r = 0, g = 0, b = 0, a = 255) {
+  //   const index = (x + y * canvWidth) * 4;
 
-    canvData.data[index + 0] = r;
-    canvData.data[index + 1] = g;
-    canvData.data[index + 2] = b;
-    canvData.data[index + 3] = a;
-  }
-  function updateCanvas() {
-    ctx.putImageData(canvData, 0, 0);
-  }
+  //   canvData.data[index + 0] = r;
+  //   canvData.data[index + 1] = g;
+  //   canvData.data[index + 2] = b;
+  //   canvData.data[index + 3] = a;
+  // }
+  // function updateCanvas() {
+  //   ctx.putImageData(canvData, 0, 0);
+  // }
 
   function drawPoint({ x, y, type = 0, d = 4, c = [0, 0, 0, 255] }) {
     switch (type) {
@@ -157,7 +157,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
   function thinoutPoints(points, dists, m) {
-    let cur_index = 0;
+    var cur_index = 0;
     while (points.length > m) {
       let delPoint = -1;
       do {
