@@ -1,4 +1,5 @@
 document.addEventListener('DOMContentLoaded', () => {
+  
   const canv = document.getElementById('canv');
   canv.width = window.innerWidth - 40;
   canv.height = window.innerHeight - 40;
